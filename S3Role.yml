@@ -1,0 +1,27 @@
+Parameters:
+  WebAppEnv:
+    Description: "An Enviroment name to tag resources"
+    ConstraintDescription: "Your env is invalid! Please, type an environment from the list"
+    Type: "String"
+
+Resources:
+   S3WebApp:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: udacity-udagram-mjp
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+    DeletionPolicy: Delete
+   S3WebAppPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3WebApp
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: s3:*
+            Resource: !Join ["", ["arn:aws:s3:::", !Ref "S3WebApp", "/*"]]
+            Principal:
+              AWS: "*"
