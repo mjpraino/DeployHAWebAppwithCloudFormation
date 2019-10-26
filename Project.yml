@@ -228,12 +228,17 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
           #!/bin/bash
-          yum update -y
-          yum install -y httpd
-          systemctl start httpd
-          systemctl enable httpd
-          wget -P ../../var/www/html https://s3.us-west-2.amazonaws.com/udacity-webapp-deployment/index.html
+          apt-get update -y
+          apt-get install unzip awscli -y
+          apt-get install apache2 -y
+          systemctl start apache2.service
+          sudo rm /var/www/html/index.html
+          sudo aws s3 cp s3://udacity-udagram/udagram.zip /var/www/html
+          sudo unzip /var/www/html/udagram.zip -d /var/www/html
+          systemctl restart apache2.service
       ImageId: ami-06d51e91cea0dac8d
+      IamInstanceProfile:
+        Fn::ImportValue: !Sub "${EnvironmentName}-IAM-NAME"
       SecurityGroups:
       - Ref: WebServerSecGroup
       InstanceType: t2.medium
@@ -297,3 +302,36 @@ Resources:
       VpcId: 
         Fn::ImportValue:
           Fn::Sub: "${EnvironmentName}-VPCID"
+  ListBucketInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: S3BucketRole
+
+  S3BucketRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+
+  S3BucketsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: S3BucketsPolicy
+      PolicyDocument:
+        Statement:
+        - Effect: Allow
+          Action:
+          - s3:List*
+          Resource: "*"
+      Roles:
+      - Ref: S3BucketRole
