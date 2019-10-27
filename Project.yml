@@ -232,16 +232,15 @@ Resources:
           apt-get install unzip awscli -y
           apt-get install apache2 -y
           systemctl start apache2.service
-          sudo rm /var/www/html/index.html
-          sudo aws s3 cp s3://udacity-udagram/udagram.zip /var/www/html
-          sudo unzip /var/www/html/udagram.zip -d /var/www/html
-          systemctl restart apache2.service
+          cd /var/www/html
+          aws s3 cp s3://udacityiacproject/Udacity.zip
+          unzip -o Udacity.zip
       ImageId: ami-06d51e91cea0dac8d
       IamInstanceProfile:
         Fn::ImportValue: !Sub "${EnvironmentName}-IAM-NAME"
       SecurityGroups:
       - Ref: WebServerSecGroup
-      InstanceType: t2.medium
+      InstanceType: t2.micro
       BlockDeviceMappings:
       - DeviceName: "/dev/sdk"
         Ebs:
@@ -254,8 +253,8 @@ Resources:
           !Sub "${EnvironmentName}-PRIV-NETS"
       LaunchConfigurationName:
         Ref: WebAppLaunchConfig
-      MinSize: '4'
-      MaxSize: '4'
+      MinSize: '1'
+      MaxSize: '1'
       TargetGroupARNs:
       - Ref: WebAppTargetGroup
   WebAppLB:
