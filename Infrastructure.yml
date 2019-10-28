@@ -49,11 +49,13 @@ Parameters:
         Fn::Base64: !Sub |
           #!/bin/bash
           #!/bin/bash
-          yum update -y
-          yum install -y httpd
-          systemctl start httpd
-          systemctl enable httpd
-          wget -P ../../var/www/html https://s3.us-west-2.amazonaws.com/udacity-webapp-deployment/index.html
+          sudo apt-get update -y
+          sudo apt-get install apache2 -y
+          sudo ufw allow 'Apache'
+          sudo systemctl start apache2.service
+          sudo systemctl enable apache2.servic
+          /var/www/html/
+          wget -P ../../var/www/html https://ha-udacity-webapp-deployment.s3-us-west-2.amazonaws.com/index.html
       ImageId: ami-06d51e91cea0dac8d
       SecurityGroups:
       - Ref: WebServerSecGroup

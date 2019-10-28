@@ -29,6 +29,7 @@ Resources:
       Type: AWS::EC2::VPC
       Properties:
           CidrBlock: !Ref VpcCIDR
+          EnableDnsSupport: true
           EnableDnsHostnames: true
           Tags:
               - Key: Name
@@ -236,8 +237,6 @@ Resources:
           /var/www/html/
           wget -P ../../var/www/html https://ha-udacity-webapp-deployment.s3-us-west-2.amazonaws.com/index.html
       ImageId: ami-06d51e91cea0dac8d
-      IamInstanceProfile:
-        Fn::ImportValue: !Sub "${EnvironmentName}-IAM-NAME"
       SecurityGroups:
       - Ref: WebServerSecGroup
       InstanceType: t3.small
