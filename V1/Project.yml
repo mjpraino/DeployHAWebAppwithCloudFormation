@@ -55,9 +55,11 @@ Resources:
           CidrBlock: !Ref PublicSubnet1CIDR
           MapPublicIpOnLaunch: true
           Tags:
-              - Key: Name
-                Value: !Sub ${EnvironmentName} Public Subnet (AZ1)
-
+          -   Key: Name
+              Value: !Sub Public ${PublicSubnet1CIDR}
+          -   Key: CloudFormationStack
+              Value: !Ref AWS::StackId
+          VpcId: !Ref VPC
   PublicSubnet2:
       Type: AWS::EC2::Subnet
       Properties:
@@ -66,8 +68,11 @@ Resources:
           CidrBlock: !Ref PublicSubnet2CIDR
           MapPublicIpOnLaunch: true
           Tags:
-              - Key: Name
-                Value: !Sub ${EnvironmentName} Public Subnet (AZ2)
+          -   Key: Name
+              Value: !Sub Public ${PublicSubnet2CIDR}
+          -   Key: CloudFormationStack
+              Value: !Ref AWS::StackId
+          VpcId: !Ref VPC
 
   PrivateSubnet1:
       Type: AWS::EC2::Subnet
@@ -77,9 +82,11 @@ Resources:
           CidrBlock: !Ref PrivateSubnet1CIDR
           MapPublicIpOnLaunch: false
           Tags:
-              - Key: Name
-                Value: !Sub ${EnvironmentName} Private Subnet (AZ1)
-
+          -   Key: Name
+              Value: !Sub Private ${PrivateSubnet1CIDR}
+          -   Key: CloudFormationStack
+              Value: !Ref AWS::StackId
+          VpcId: !Ref VPC
   PrivateSubnet2:
       Type: AWS::EC2::Subnet
       Properties:
@@ -88,8 +95,11 @@ Resources:
           CidrBlock: !Ref PrivateSubnet2CIDR
           MapPublicIpOnLaunch: false
           Tags:
-              - Key: Name
-                Value: !Sub ${EnvironmentName} Private Subnet (AZ2)
+          -   Key: Name
+              Value: !Sub Private ${PrivateSubnet2CIDR}
+          -   Key: CloudFormationStack
+              Value: !Ref AWS::StackId
+          VpcId: !Ref VPC
 
   NatGateway1EIP:
       Type: AWS::EC2::EIP
@@ -188,9 +198,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow http to our load balancer
-      VpcId:
-        Fn::ImportValue:
-          !Sub "${EnvironmentName}-VPCID"
+      VpcId: !Ref VPC
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: 80
@@ -205,9 +213,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow http to our hosts and SSH from local only
-      VpcId:
-        Fn::ImportValue:
-          !Sub "${EnvironmentName}-VPCID"
+      VpcId: !Ref VPC
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: 80
@@ -248,7 +254,7 @@ Resources:
     Type: AWS::IAM::InstanceProfile
     Properties: 
       Roles:
-        - UdacityS3ReadOnlyEC2
+        - full_s3_access_from_EC2
   WebAppGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -265,8 +271,8 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Subnets:
-      - Fn::ImportValue: !Sub "${EnvironmentName}-PUB1-SN"
-      - Fn::ImportValue: !Sub "${EnvironmentName}-PUB2-SN"
+      -   Ref: PublicSubnet1
+      -   Ref: PublicSubnet2
       SecurityGroups:
       - Ref: LBSecGroup
   Listener:
@@ -302,9 +308,7 @@ Resources:
       Port: 80
       Protocol: HTTP
       UnhealthyThresholdCount: 5
-      VpcId: 
-        Fn::ImportValue:
-          Fn::Sub: "${EnvironmentName}-VPCID"
+      VpcId: !Ref VPC
 
 Outputs:
   # Network related Outputs
