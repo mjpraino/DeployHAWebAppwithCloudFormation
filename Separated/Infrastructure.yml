@@ -18,54 +18,54 @@ Parameters:
 
 Resources:
   S3AccessIAMRole:
-        Type: AWS::IAM::Role
-        Properties: 
-            AssumeRolePolicyDocument:
-                Version: '2012-10-17'
-                Statement:
-                -   Effect: Allow
-                    Principal:
-                        Service:
-                        -   ec2.amazonaws.com
-                    Action:
-                    -   sts:AssumeRole
-            Path: "/" 
+    Type: AWS::IAM::Role
+    Properties: 
+        AssumeRolePolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            -   Effect: Allow
+                Principal:
+                    Service:
+                    -   ec2.amazonaws.com
+                Action:
+                -   sts:AssumeRole
+        Path: "/" 
   S3AccessIAMPolicy:
-        Type: AWS::IAM::Policy
-        Properties:
-            PolicyDocument:
-                Statement:
-                -   Effect: Allow
-                    Action:
-                    -   s3:GetObject*
-                    Resource: "*"
-            PolicyName: S3AccessIAMPolicy
-            Roles:
-            -   Ref: S3AccessIAMRole
+    Type: AWS::IAM::Policy
+    Properties:
+        PolicyDocument:
+            Statement:
+            -   Effect: Allow
+                Action:
+                -   s3:GetObject*
+                Resource: "*"
+        PolicyName: S3AccessIAMPolicy
+        Roles:
+        -   Ref: S3AccessIAMRole
   S3AccessInstanceProfile:
-        Type: AWS::IAM::InstanceProfile
-        Properties:
-            Path: "/"
-            Roles:
-            -   Ref: S3AccessIAMRole
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+        Path: "/"
+        Roles:
+        -   Ref: S3AccessIAMRole
   S3AccessBucketPolicy:
-        Type: AWS::S3::BucketPolicy
-        Properties:
-            Bucket: !Ref Bucket
-            PolicyDocument:
-                Statement:
-                -   Action:
-                    -   s3:GetObject
-                    Effect: Allow
-                    Principal: '*'
-                    Resource:
-                        Fn::Join: 
-                        -   ""
+    Type: AWS::S3::BucketPolicy
+    Properties:
+        Bucket: !Ref Bucket
+        PolicyDocument:
+            Statement:
+            -   Action:
+                -   s3:GetObject
+                Effect: Allow
+                Principal: '*'
+                Resource:
+                    Fn::Join: 
+                    -   ""
+                    - 
+                        - "arn:aws:s3:::"
                         - 
-                            - "arn:aws:s3:::"
-                            - 
-                                Ref: "Bucket"
-                            -   "/*" 
+                            Ref: "Bucket"
+                        -   "/*" 
   LBSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -145,8 +145,8 @@ Resources:
         Key: access_logs.s3.bucket
         Value: !Ref AccessLogsS3Bucket
       Subnets:
-      - Fn::ImportValue: !Sub "${EnvironmentName}-PUB1-SN"
-      - Fn::ImportValue: !Sub "${EnvironmentName}-PUB2-SN"
+      - FN::ImportValue: !Sub "{EnvironmentName}-PUB1-SN"
+      - FN::ImportValue: !Sub "{EnvironmentName}-PUB2-SN"
       SecurityGroups:
       - Ref: LBSecGroup
   Listener:
