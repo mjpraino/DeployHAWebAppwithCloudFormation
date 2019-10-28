@@ -240,7 +240,7 @@ Resources:
         Fn::ImportValue: !Sub "${EnvironmentName}-IAM-NAME"
       SecurityGroups:
       - Ref: WebServerSecGroup
-      InstanceType: t2.micro
+      InstanceType: t3.small
       BlockDeviceMappings:
       - DeviceName: "/dev/sdk"
         Ebs:
@@ -254,7 +254,7 @@ Resources:
       LaunchConfigurationName:
         Ref: WebAppLaunchConfig
       MinSize: '1'
-      MaxSize: '1'
+      MaxSize: '2'
       TargetGroupARNs:
       - Ref: WebAppTargetGroup
   WebAppLB:
