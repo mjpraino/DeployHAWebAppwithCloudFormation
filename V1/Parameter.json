@@ -1,6 +1,6 @@
 [{
         "ParameterKey": "EnvironmentName",
-        "ParameterValue": "Project02"
+        "ParameterValue": "production"
     },
     {
         "ParameterKey": "VpcCIDR",
