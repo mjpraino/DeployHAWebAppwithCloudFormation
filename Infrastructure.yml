@@ -1,12 +1,71 @@
 Description:
-    Matthew Praino / Udacity Project02
+    Matthew Praino / Udacity 
 
 Parameters:
     EnvironmentName:
         Description: An environment that will be prefixed to resource names.
         Type: String
+    
+    Bucket:
+        Default: 'ha-udacity-webapp-deployment'
+        Description: 'Bucket containing website files'
+        Type: String
+
+    AccessLogsS3Bucket:
+        Description: "S3 bucket name to place the log in."
+        Type: String
+        Default: "ha-udacity-webapp-deployment-logs"
 
 Resources:
+  S3AccessIAMRole:
+        Type: AWS::IAM::Role
+        Properties: 
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                -   Effect: Allow
+                    Principal:
+                        Service:
+                        -   ec2.amazonaws.com
+                    Action:
+                    -   sts:AssumeRole
+            Path: "/" 
+  S3AccessIAMPolicy:
+        Type: AWS::IAM::Policy
+        Properties:
+            PolicyDocument:
+                Statement:
+                -   Effect: Allow
+                    Action:
+                    -   s3:GetObject*
+                    Resource: "*"
+            PolicyName: S3AccessIAMPolicy
+            Roles:
+            -   Ref: S3AccessIAMRole
+  S3AccessInstanceProfile:
+        Type: AWS::IAM::InstanceProfile
+        Properties:
+            Path: "/"
+            Roles:
+            -   Ref: S3AccessIAMRole
+  S3AccessBucketPolicy:
+        Type: AWS::S3::BucketPolicy
+        Properties:
+            Bucket: !Ref Bucket
+            PolicyDocument:
+                Statement:
+                -   Action:
+                    -   s3:GetObject
+                    Effect: Allow
+                    Principal: '*'
+                    Resource:
+                        Fn::Join: 
+                        -   ""
+                        - 
+                            - "arn:aws:s3:::"
+                            - 
+                                Ref: "Bucket"
+                            -   "/*" 
   LBSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -52,12 +111,10 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
           #!/bin/bash
-          sudo apt-get update -y
-          sudo apt-get install apache2 -y
-          sudo ufw allow 'Apache'
-          sudo systemctl start apache2.service
-          sudo systemctl enable apache2.servic
-          /var/www/html/
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
           wget -P ../../var/www/html https://ha-udacity-webapp-deployment.s3-us-west-2.amazonaws.com/index.html
       ImageId: ami-06d51e91cea0dac8d
       SecurityGroups:
@@ -82,6 +139,11 @@ Resources:
   WebAppLB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
+      LoadBalancerAttributes:
+      - Key: access_logs.s3.enabled
+        Value: true 
+        Key: access_logs.s3.bucket
+        Value: !Ref AccessLogsS3Bucket
       Subnets:
       - Fn::ImportValue: !Sub "${EnvironmentName}-PUB1-SN"
       - Fn::ImportValue: !Sub "${EnvironmentName}-PUB2-SN"
