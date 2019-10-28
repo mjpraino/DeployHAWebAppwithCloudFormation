@@ -145,8 +145,8 @@ Resources:
         Key: access_logs.s3.bucket
         Value: !Ref AccessLogsS3Bucket
       Subnets:
-      - FN::ImportValue: !Sub "{EnvironmentName}-PUB1-SN"
-      - FN::ImportValue: !Sub "{EnvironmentName}-PUB2-SN"
+      - Fn::ImportValue: !Sub "{EnvironmentName}-PUB1-SN"
+      - Fn::ImportValue: !Sub "{EnvironmentName}-PUB2-SN"
       SecurityGroups:
       - Ref: LBSecGroup
   Listener:
