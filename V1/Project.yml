@@ -23,6 +23,10 @@ Parameters:
   PublicSubnet2CIDR:
       Description: Please enter the IP range (CIDR notation) for this public subnet
       Type: String
+  Bucket:
+      Default: 'ha-udacity-webapp-deployment'
+      Description: 'Bucket containing website files'
+      Type: String
 
 Resources:
   VPC:
@@ -239,10 +243,13 @@ Resources:
           apt-get install unzip awscli -y
           apt-get install apache2 -y
           systemctl start apache2.service
+          systemctl enable apache2.service
           cd /var/www/html
           aws s3 cp s3://udacityiacproject/Udacity.zip
           unzip -o Udacity.zip
+          wget -P../../var/www/html https://ha-udacity-webapp-deployment.s3-us-west-2.amazonaws.com/index.html
       ImageId: ami-06d51e91cea0dac8d
+      IamInstanceProfile: arn:aws:iam::292152339671:role/udacityproject2-S3AccessIAMRole-1HHJ5T3ZCUANR
       SecurityGroups:
       - Ref: WebServerSecGroup
       InstanceType: t3.small
@@ -255,6 +262,31 @@ Resources:
     Properties: 
       Roles:
         - full_s3_access_from_EC2
+  S3AccessIAMRole:
+    Type: AWS::IAM::Role
+    Properties: 
+        AssumeRolePolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            -   Effect: Allow
+                Principal:
+                    Service:
+                    -   ec2.amazonaws.com
+                Action:
+                -   sts:AssumeRole
+        Path: "/"
+  S3AccessIAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+        PolicyDocument:
+            Statement:
+            -   Effect: Allow
+                Action:
+                -   s3:GetObject*
+                Resource: "*"
+        PolicyName: S3AccessIAMPolicy
+        Roles:
+        -   Ref: S3AccessIAMRole
   WebAppGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -263,7 +295,7 @@ Resources:
       - !Ref PublicSubnet2
       LaunchConfigurationName:
         Ref: WebAppLaunchConfig
-      MinSize: '1'
+      MinSize: '2'
       MaxSize: '2'
       TargetGroupARNs:
       - Ref: WebAppTargetGroup
